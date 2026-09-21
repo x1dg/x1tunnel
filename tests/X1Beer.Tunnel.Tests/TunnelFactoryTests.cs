@@ -162,6 +162,34 @@ public class TunnelFactoryTests
         Assert.Equal(0, provider.Starts);
     }
 
+    [Fact]
+    public void Empty_provider_list_is_rejected() =>
+        Assert.Throws<ArgumentException>(() => new TunnelFactory(Array.Empty<ITunnelProvider>()));
+
+    [Fact]
+    public async Task Null_provider_list_is_rejected()
+    {
+        var factory = new TunnelFactory([new FakeProvider("cloudflare-quick")]);
+        await Assert.ThrowsAsync<ArgumentException>(() => factory.StartAsync(new TunnelOptions
+        {
+            LocalPort = 5201,
+            WaitForLocalListener = false,
+            Providers = null!,
+        }));
+    }
+
+    [Fact]
+    public async Task Public_url_must_be_absolute_http()
+    {
+        var factory = new TunnelFactory([new FakeProvider("cloudflare-quick")]);
+        var exception = await Assert.ThrowsAsync<TunnelException>(() => factory.StartAsync(new TunnelOptions
+        {
+            PublicUrl = "not-a-url",
+            WaitForLocalListener = false,
+        }));
+        Assert.Equal("external", exception.Provider);
+    }
+
     private static int ClosedPort()
     {
         var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);

@@ -18,4 +18,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\x1tunnel.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="X1Beer.Tunnel.Tests" />
+  </ItemGroup>
 </Project>

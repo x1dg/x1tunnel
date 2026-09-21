@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 
@@ -5,26 +6,17 @@ namespace X1Beer.Tunnel;
 
 internal static class CommandLocator
 {
-    public static bool Exists(string command)
-    {
-        try
-        {
-            using var process = Process.Start(new ProcessStartInfo
-            {
-                FileName = OperatingSystem.IsWindows() ? "where.exe" : "which",
-                Arguments = command,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            });
+    private static readonly ConcurrentDictionary<string, string?> Resolved = new(
+        OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
-            return process?.WaitForExit(3000) == true && process.ExitCode == 0;
-        }
-        catch
-        {
-            return false;
-        }
+    public static bool Exists(string command) => Find(command) is not null;
+
+    public static string? Find(string command)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+            return null;
+
+        return Resolved.GetOrAdd(command, Resolve);
     }
 
     public static ProcessStartInfo ForCommand(string fileName, IReadOnlyList<string> arguments)
@@ -41,14 +33,13 @@ internal static class CommandLocator
 
         if (OperatingSystem.IsWindows() && fileName is "npx" or "npm")
         {
+            var resolved = Find(fileName) ?? fileName;
             startInfo.FileName = "cmd.exe";
-            startInfo.ArgumentList.Add("/d");
-            startInfo.ArgumentList.Add("/c");
-            startInfo.ArgumentList.Add(fileName + " " + string.Join(' ', arguments.Select(Quote)));
+            startInfo.Arguments = "/d /s /c \"" + JoinCmd(resolved, arguments) + "\"";
             return startInfo;
         }
 
-        startInfo.FileName = fileName;
+        startInfo.FileName = Find(fileName) ?? fileName;
         foreach (var argument in arguments)
             startInfo.ArgumentList.Add(argument);
 
@@ -61,10 +52,97 @@ internal static class CommandLocator
             return arguments;
 
         var combined = new List<string>(arguments);
-        combined.AddRange(extra.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        combined.AddRange(SplitArguments(extra));
         return combined;
     }
 
-    private static string Quote(string argument) =>
-        argument.Contains(' ') ? $"\"{argument}\"" : argument;
+    internal static IReadOnlyList<string> SplitArguments(string extra)
+    {
+        var result = new List<string>();
+        var current = new StringBuilder();
+        var quoted = false;
+        foreach (var ch in extra)
+        {
+            if (ch == '"')
+            {
+                quoted = !quoted;
+                continue;
+            }
+
+            if (!quoted && char.IsWhiteSpace(ch))
+            {
+                if (current.Length == 0)
+                    continue;
+
+                result.Add(current.ToString());
+                current.Clear();
+                continue;
+            }
+
+            current.Append(ch);
+        }
+
+        if (quoted)
+            throw new ArgumentException("ExtraArguments has an unterminated quote.", nameof(extra));
+
+        if (current.Length > 0)
+            result.Add(current.ToString());
+
+        return result;
+    }
+
+    private static string? Resolve(string command)
+    {
+        if (Path.IsPathRooted(command))
+            return File.Exists(command) ? command : null;
+
+        var path = Environment.GetEnvironmentVariable("PATH");
+        if (string.IsNullOrEmpty(path))
+            return null;
+
+        var extensions = new List<string> { string.Empty };
+        if (OperatingSystem.IsWindows())
+        {
+            var pathExt = Environment.GetEnvironmentVariable("PATHEXT") ?? ".COM;.EXE;.BAT;.CMD";
+            extensions.AddRange(pathExt.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        }
+
+        foreach (var directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        {
+            foreach (var extension in extensions)
+            {
+                string candidate;
+                try
+                {
+                    candidate = Path.Combine(directory, command + extension);
+                }
+                catch (ArgumentException)
+                {
+                    continue;
+                }
+
+                if (File.Exists(candidate))
+                    return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private static string JoinCmd(string fileName, IReadOnlyList<string> arguments)
+    {
+        var parts = new List<string>(arguments.Count + 1) { QuoteCmd(fileName) };
+        foreach (var argument in arguments)
+            parts.Add(QuoteCmd(argument));
+
+        return string.Join(' ', parts);
+    }
+
+    private static string QuoteCmd(string value)
+    {
+        if (value.IndexOfAny(['\r', '\n', '%', '!']) >= 0)
+            throw new ArgumentException("Tunnel arguments cannot contain line breaks, '%', or '!'.");
+
+        return "\"" + value.Replace("\"", "\"\"") + "\"";
+    }
 }

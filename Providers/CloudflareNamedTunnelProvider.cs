@@ -22,10 +22,13 @@ public sealed class CloudflareNamedTunnelProvider : ITunnelProvider
 
         var startInfo = CommandLocator.ForCommand("cloudflared", CommandLocator.WithExtra(arguments, options.ExtraArguments));
         var publicUrl = TunnelOptions.ToPublicHttps(options.RequestedHostname!);
+        var reportedOrigin = string.IsNullOrWhiteSpace(options.CloudflareTunnelToken)
+            ? options.LocalOrigin()
+            : "origin from the Cloudflare tunnel token";
         return TunnelProcessHost.RunAsync(
             startInfo,
             Name,
-            options.LocalOrigin(),
+            reportedOrigin,
             line => UrlMatchers.CloudflareNamed(line, publicUrl),
             options.StartTimeout,
             logger,

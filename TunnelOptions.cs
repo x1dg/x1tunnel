@@ -32,14 +32,14 @@ public sealed class TunnelOptions
 
     public bool Enabled { get; set; } = true;
 
-    public bool ThrowOnStartFailure { get; set; } = true;
+    public bool ThrowOnStartFailure { get; set; }
 
     public TunnelOptions Clone() => new()
     {
         LocalHost = LocalHost,
         LocalPort = LocalPort,
         LocalScheme = LocalScheme,
-        Providers = [.. Providers],
+        Providers = Providers is null ? [] : [.. Providers],
         RequestedHostname = RequestedHostname,
         StartTimeout = StartTimeout,
         ListenTimeout = ListenTimeout,
@@ -55,6 +55,9 @@ public sealed class TunnelOptions
 
     internal void Validate(bool requirePort)
     {
+        if (requirePort && (Providers is null || Providers.Count == 0))
+            throw new ArgumentException("At least one tunnel provider is required.", nameof(Providers));
+
         if (requirePort && LocalPort is < 1 or > 65535)
             throw new ArgumentOutOfRangeException(nameof(LocalPort), LocalPort, "LocalPort must be between 1 and 65535.");
 
@@ -77,6 +80,9 @@ public sealed class TunnelOptions
     internal string LocalOrigin()
     {
         var host = string.IsNullOrWhiteSpace(LocalHost) ? "127.0.0.1" : LocalHost;
+        if (host.Contains(':') && !host.StartsWith('['))
+            host = "[" + host + "]";
+
         var scheme = string.IsNullOrWhiteSpace(LocalScheme) ? "http" : LocalScheme;
         return $"{scheme}://{host}:{LocalPort}";
     }

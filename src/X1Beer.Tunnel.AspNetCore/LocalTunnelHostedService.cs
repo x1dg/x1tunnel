@@ -62,34 +62,36 @@ internal sealed class LocalTunnelHostedService : BackgroundService
 
             await using var tunnel = await _factory.StartAsync(options, stoppingToken).ConfigureAwait(false);
             _info.Publish(tunnel);
-            _logger.LogInformation("Local tunnel {Provider} is {Url}", tunnel.Provider, tunnel.PublicUrl);
-            await Task.Delay(Timeout.Infinite, stoppingToken).ConfigureAwait(false);
+            try
+            {
+                _logger.LogInformation("Local tunnel {Provider} is {Url}", tunnel.Provider, tunnel.PublicUrl);
+                await Task.Delay(Timeout.Infinite, stoppingToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _info.Clear();
+            }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
         }
-        catch (Exception ex) when (!options.ThrowOnStartFailure)
+        catch (Exception ex)
         {
+            _info.Clear();
             _logger.LogError(ex, "Local tunnel failed to start");
+            if (options.ThrowOnStartFailure)
+                _lifetime.StopApplication();
         }
     }
 
     private void ApplyServerAddress(TunnelOptions options)
     {
         var addresses = _server.Features.Get<IServerAddressesFeature>()?.Addresses;
-        if (addresses is null)
+        if (!TunnelEndpoint.TrySelect(addresses, options.LocalScheme, out var host, out var port, out var scheme))
             throw new TunnelException("tunnel", "Set Tunnel:LocalPort. The server did not publish a bind address.");
 
-        foreach (var address in addresses)
-        {
-            if (!TunnelEndpoint.TryParse(address, out var host, out var port))
-                continue;
-
-            options.LocalPort = port;
-            options.LocalHost = host;
-            return;
-        }
-
-        throw new TunnelException("tunnel", "Set Tunnel:LocalPort. The server did not publish a bind address.");
+        options.LocalPort = port;
+        options.LocalHost = host;
+        options.LocalScheme = scheme;
     }
 }

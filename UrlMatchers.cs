@@ -18,9 +18,9 @@ internal static partial class UrlMatchers
 
     public static string? Ngrok(string line)
     {
-        var logfmt = NgrokLogfmtRegex().Match(line);
-        if (logfmt.Success)
-            return logfmt.Groups[1].Value.TrimEnd(',');
+        var logfmt = NgrokLogfmtRegex().Matches(line);
+        if (logfmt.Count > 0 && line.Contains("started tunnel", StringComparison.OrdinalIgnoreCase))
+            return logfmt[^1].Groups[1].Value.TrimEnd(',');
 
         var json = NgrokJsonRegex().Match(line);
         return json.Success ? json.Groups[1].Value : null;

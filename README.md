@@ -99,8 +99,11 @@ builder.Services.AddLocalTunnel(options =>
 - Ошибка — `TunnelException` с именем провайдера и хвостом stdout. Отмена — `OperationCanceledException`.
 - Остановка — `await using` или `StopAsync`. Процесс гасится вместе с деревом дочерних процессов.
 - Логи — `ILogger`, не консоль.
+- Ошибка старта в ASP.NET Core пишется в лог и не останавливает хост. `ThrowOnStartFailure = true` останавливает приложение после этого лога.
 - Туннель публикует локальный порт в интернет. Библиотека пишет warning с URL.
+- Режим токена Cloudflare ходит в origin из dashboard, а не в `LocalPort`. `RequestedHostname` нужен, чтобы вернуть публичный URL, и с токеном не сверяется.
+- После остановки хоста `ITunnelInfo.PublicUrl` становится пустым.
 
 ## Устаревший фасад
 
-`LocalTunnelProcessStarter` оставлен для старого вызова `StartAsync(port)` и по-прежнему пробует cloudflared, затем localtunnel. Новый код берёт `TunnelFactory`.
+`LocalTunnelProcessStarter` оставлен для старого вызова `StartAsync(port)` и по-прежнему пробует cloudflared, затем localtunnel. Он не ждёт локальный порт и останавливает процесс синхронно. Новый код берёт `TunnelFactory`.

@@ -47,6 +47,29 @@ internal sealed class ProcessTunnel : ITunnel
         if (Interlocked.Exchange(ref _stopped, 1) != 0)
             return;
 
+        TryKill();
+        if (!await WaitForExitAsync(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false))
+        {
+            _logger.LogWarning("Timed out waiting for tunnel process {Provider} to exit", Provider);
+            TryKill();
+            if (!await WaitForExitAsync(TimeSpan.FromSeconds(2), CancellationToken.None).ConfigureAwait(false))
+                _logger.LogError("Tunnel process {Pid} for {Provider} is still running after kill", SafePid(), Provider);
+        }
+
+        try
+        {
+            _process.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to release tunnel process handle for {Provider}", Provider);
+        }
+
+        MarkDisconnected();
+    }
+
+    private void TryKill()
+    {
         try
         {
             if (!_process.HasExited)
@@ -56,25 +79,37 @@ internal sealed class ProcessTunnel : ITunnel
         {
             _logger.LogWarning(ex, "Failed to kill tunnel process for {Provider}", Provider);
         }
+    }
 
+    private async Task<bool> WaitForExitAsync(TimeSpan timeout, CancellationToken cancellationToken)
+    {
         try
         {
-            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeout.CancelAfter(TimeSpan.FromSeconds(5));
-            await _process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            linked.CancelAfter(timeout);
+            await _process.WaitForExitAsync(linked.Token).ConfigureAwait(false);
+            return true;
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning("Timed out waiting for tunnel process {Provider} to exit", Provider);
+            return false;
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Tunnel process {Provider} did not exit cleanly", Provider);
+            return false;
         }
-        finally
+    }
+
+    private int SafePid()
+    {
+        try
         {
-            _process.Dispose();
-            MarkDisconnected();
+            return _process.Id;
+        }
+        catch
+        {
+            return -1;
         }
     }
 

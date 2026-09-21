@@ -6,11 +6,13 @@ public sealed class TunnelInfo : ITunnelInfo
 {
     private ITunnel? _tunnel;
 
-    public string? PublicUrl => _tunnel?.PublicUrl;
+    public string? PublicUrl => Volatile.Read(ref _tunnel)?.PublicUrl;
 
-    public string? Provider => _tunnel?.Provider;
+    public string? Provider => Volatile.Read(ref _tunnel)?.Provider;
 
-    public bool IsConnected => _tunnel?.IsConnected == true;
+    public bool IsConnected => Volatile.Read(ref _tunnel)?.IsConnected == true;
 
-    internal void Publish(ITunnel tunnel) => _tunnel = tunnel;
+    internal void Publish(ITunnel tunnel) => Volatile.Write(ref _tunnel, tunnel);
+
+    internal void Clear() => Volatile.Write(ref _tunnel, null);
 }

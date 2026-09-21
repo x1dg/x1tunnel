@@ -15,8 +15,11 @@ public sealed class TunnelFactory : ITunnelFactory
 
     public TunnelFactory(IEnumerable<ITunnelProvider> providers, ILogger<TunnelFactory>? logger = null)
     {
-        var list = providers.ToArray();
-        _providers = list.Length == 0 ? CreateDefaultProviders() : list;
+        ArgumentNullException.ThrowIfNull(providers);
+        _providers = providers.ToArray();
+        if (_providers.Count == 0)
+            throw new ArgumentException("At least one tunnel provider is required.", nameof(providers));
+
         _logger = logger ?? NullLogger<TunnelFactory>.Instance;
     }
 
@@ -34,12 +37,31 @@ public sealed class TunnelFactory : ITunnelFactory
         cancellationToken.ThrowIfCancellationRequested();
 
         var publicUrl = FirstNonEmpty(options.PublicUrl, Environment.GetEnvironmentVariable(TunnelEnvironment.PublicUrl));
-        options.Validate(requirePort: publicUrl is null);
+        if (publicUrl is not null)
+            EnsurePublicHttpUrl(publicUrl);
+
+        var remoteOrigin = UsesRemoteCloudflareOrigin(options);
+        options.Validate(requirePort: publicUrl is null && !remoteOrigin);
+        if (options.Providers is null)
+        {
+            if (publicUrl is null && !remoteOrigin)
+                throw new ArgumentException("At least one tunnel provider is required.", nameof(options));
+
+            options.Providers = [];
+        }
+
         if (!TunnelOptions.IsLoopback(options.LocalHost))
         {
             _logger.LogWarning(
                 "Tunnel target host {Host} is not loopback. Traffic will be forwarded there.",
                 options.LocalHost);
+        }
+
+        if (remoteOrigin)
+        {
+            _logger.LogWarning(
+                "Cloudflare token mode forwards traffic to the origin stored in the tunnel token, not necessarily {Origin}. RequestedHostname is not checked against the token.",
+                options.LocalPort > 0 ? options.LocalOrigin() : "a local port");
         }
 
         if (publicUrl is not null)
@@ -51,10 +73,10 @@ public sealed class TunnelFactory : ITunnelFactory
             }
 
             _logger.LogInformation("Using configured public tunnel URL {Url}", publicUrl);
-            return new ExternalUrlTunnel(publicUrl, "external");
+            return new ExternalUrlTunnel(publicUrl, "external", _logger);
         }
 
-        if (options.WaitForLocalListener)
+        if (options.WaitForLocalListener && options.LocalPort > 0)
         {
             await LocalListenerProbe.WaitAsync(options.LocalHost, options.LocalPort, options.ListenTimeout, cancellationToken)
                 .ConfigureAwait(false);
@@ -113,5 +135,23 @@ public sealed class TunnelFactory : ITunnelFactory
             return second.Trim();
 
         return null;
+    }
+
+    private static bool UsesRemoteCloudflareOrigin(TunnelOptions options)
+    {
+        if (string.IsNullOrWhiteSpace(options.CloudflareTunnelToken)
+            || string.IsNullOrWhiteSpace(options.RequestedHostname))
+            return false;
+
+        var providers = options.Providers;
+        return providers is { Count: > 0 }
+            && providers.TrueForAll(name =>
+                string.Equals(name, TunnelProviderNames.CloudflareNamed, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void EnsurePublicHttpUrl(string publicUrl)
+    {
+        if (!Uri.TryCreate(publicUrl, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https"))
+            throw new TunnelException("external", $"Public URL must be an absolute http(s) URL. Got '{publicUrl}'.");
     }
 }

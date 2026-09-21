@@ -41,6 +41,12 @@ public class TunnelBuildingBlockTests
             UrlMatchers.Ngrok("msg=\"started tunnel\" url=https://foo.ngrok.app"));
 
     [Fact]
+    public void Ngrok_keeps_the_last_started_tunnel_url() =>
+        Assert.Equal(
+            "https://second.ngrok.app",
+            UrlMatchers.Ngrok("msg=\"started tunnel\" url=https://first.ngrok.app url=https://second.ngrok.app"));
+
+    [Fact]
     public void Named_cloudflare_is_ready_when_the_connection_is_registered() =>
         Assert.Equal(
             "https://hooks.example",
@@ -114,6 +120,43 @@ public class TunnelBuildingBlockTests
     }
 
     [Fact]
+    public void Server_address_prefers_the_requested_scheme()
+    {
+        Assert.True(TunnelEndpoint.TrySelect(
+            ["https://127.0.0.1:7000", "http://127.0.0.1:5000"],
+            "http",
+            out var host,
+            out var port,
+            out var scheme));
+        Assert.Equal("127.0.0.1", host);
+        Assert.Equal(5000, port);
+        Assert.Equal("http", scheme);
+    }
+
+    [Fact]
+    public void Ipv6_loopback_origin_is_bracketed() =>
+        Assert.Equal("http://[::1]:5201", new TunnelOptions { LocalHost = "::1", LocalPort = 5201 }.LocalOrigin());
+
+    [Fact]
+    public void Extra_arguments_keep_quoted_tokens()
+    {
+        var arguments = CommandLocator.WithExtra(["tunnel"], "--protocol \"http2 extra\"");
+        Assert.Equal(["tunnel", "--protocol", "http2 extra"], arguments);
+    }
+
+    [Fact]
+    public void Windows_npx_arguments_are_quoted_for_cmd()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        var startInfo = CommandLocator.ForCommand("npx", ["--subdomain", "a&b"]);
+        Assert.Equal("cmd.exe", startInfo.FileName);
+        Assert.Contains("\"a&b\"", startInfo.Arguments, StringComparison.Ordinal);
+        Assert.Throws<ArgumentException>(() => CommandLocator.ForCommand("npx", ["a%b"]));
+    }
+
+    [Fact]
     public async Task Process_host_reads_a_url_and_stops()
     {
         var startInfo = OperatingSystem.IsWindows()
@@ -130,6 +173,27 @@ public class TunnelBuildingBlockTests
             CancellationToken.None);
 
         Assert.Equal("https://abc.loca.lt", tunnel.PublicUrl);
+        Assert.False(tunnel.IsConnected);
+    }
+
+    [Fact]
+    public async Task Process_host_stays_connected_while_the_process_is_alive()
+    {
+        var startInfo = OperatingSystem.IsWindows()
+            ? CommandLocator.ForCommand("cmd.exe", ["/c", "echo your url is: https://abc.loca.lt & ping -n 30 127.0.0.1"])
+            : CommandLocator.ForCommand("/bin/sh", ["-c", "echo 'your url is: https://abc.loca.lt'; sleep 30"]);
+
+        await using var tunnel = await TunnelProcessHost.RunAsync(
+            startInfo,
+            "localtunnel",
+            "http://127.0.0.1:9",
+            UrlMatchers.LocalTunnel,
+            TimeSpan.FromSeconds(10),
+            NullLogger.Instance,
+            CancellationToken.None);
+
+        Assert.Equal("https://abc.loca.lt", tunnel.PublicUrl);
+        Assert.True(tunnel.IsConnected);
     }
 
     [Fact]

@@ -17,16 +17,24 @@ internal static class TunnelProcessHost
     {
         var output = new StringBuilder();
         var urlSource = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var handoff = new Handoff();
+        var stdoutEnded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stderrEnded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handoff = 0;
         var process = new Process
         {
             StartInfo = startInfo,
             EnableRaisingEvents = true,
         };
 
-        void OnLine(string? line)
+        void OnLine(string? line, TaskCompletionSource ended)
         {
-            if (string.IsNullOrEmpty(line))
+            if (line is null)
+            {
+                ended.TrySetResult();
+                return;
+            }
+
+            if (line.Length == 0)
                 return;
 
             lock (output)
@@ -38,25 +46,26 @@ internal static class TunnelProcessHost
                 urlSource.TrySetResult(url);
         }
 
-        process.OutputDataReceived += (_, eventArgs) => OnLine(eventArgs.Data);
-        process.ErrorDataReceived += (_, eventArgs) => OnLine(eventArgs.Data);
+        process.OutputDataReceived += (_, eventArgs) => OnLine(eventArgs.Data, stdoutEnded);
+        process.ErrorDataReceived += (_, eventArgs) => OnLine(eventArgs.Data, stderrEnded);
         process.Exited += (_, _) =>
         {
-            _ = ObserveExitAsync();
+            _ = FailIfUrlMissingAfterDrainAsync();
         };
 
-        async Task ObserveExitAsync()
+        async Task FailIfUrlMissingAfterDrainAsync()
         {
             try
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(750), cancellationToken).ConfigureAwait(false);
+                await Task.WhenAll(stdoutEnded.Task, stderrEnded.Task)
+                    .WaitAsync(TimeSpan.FromSeconds(2))
+                    .ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
+            catch (Exception ex) when (ex is TimeoutException or OperationCanceledException)
             {
-                return;
             }
 
-            if (Volatile.Read(ref handoff.Value) == 1)
+            if (Volatile.Read(ref handoff) == 1)
                 return;
 
             urlSource.TrySetException(new TunnelException(
@@ -86,6 +95,8 @@ internal static class TunnelProcessHost
         }
         catch (Exception ex)
         {
+            stdoutEnded.TrySetResult();
+            stderrEnded.TrySetResult();
             await KillAsync(process, logger, provider).ConfigureAwait(false);
             throw new TunnelException(provider, "Failed to read tunnel process output.", Tail(output), ex);
         }
@@ -96,7 +107,7 @@ internal static class TunnelProcessHost
         try
         {
             var url = await urlSource.Task.WaitAsync(timeoutSource.Token).ConfigureAwait(false);
-            Volatile.Write(ref handoff.Value, 1);
+            Volatile.Write(ref handoff, 1);
             logger.LogWarning(
                 "Public tunnel {Url} forwards internet traffic to {Origin} via {Provider} (pid {Pid}).",
                 url,
@@ -133,15 +144,7 @@ internal static class TunnelProcessHost
 
     private static async Task KillAsync(Process process, ILogger logger, string provider)
     {
-        try
-        {
-            if (!process.HasExited)
-                process.Kill(entireProcessTree: true);
-        }
-        catch (Exception ex)
-        {
-            logger.LogDebug(ex, "Failed to kill {Provider} process during startup failure", provider);
-        }
+        TryKill(process, logger, provider);
 
         try
         {
@@ -151,10 +154,24 @@ internal static class TunnelProcessHost
         catch (Exception ex)
         {
             logger.LogDebug(ex, "Failed to wait for {Provider} process exit", provider);
+            TryKill(process, logger, provider);
         }
         finally
         {
             process.Dispose();
+        }
+    }
+
+    private static void TryKill(Process process, ILogger logger, string provider)
+    {
+        try
+        {
+            if (!process.HasExited)
+                process.Kill(entireProcessTree: true);
+        }
+        catch (Exception ex)
+        {
+            logger.LogDebug(ex, "Failed to kill {Provider} process during startup failure", provider);
         }
     }
 
@@ -178,10 +195,5 @@ internal static class TunnelProcessHost
             const int limit = 4000;
             return text.Length <= limit ? text : text[^limit..];
         }
-    }
-
-    private sealed class Handoff
-    {
-        public int Value;
     }
 }

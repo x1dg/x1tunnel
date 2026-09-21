@@ -29,7 +29,7 @@ public static class TunnelServiceCollectionExtensions
             services.GetRequiredService<ILogger<TunnelFactory>>()));
         services.TryAddSingleton<TunnelInfo>();
         services.TryAddSingleton<ITunnelInfo>(static services => services.GetRequiredService<TunnelInfo>());
-        services.AddHostedService<LocalTunnelHostedService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, LocalTunnelHostedService>());
         return services;
     }
 }
