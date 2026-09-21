@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="x1tunnel.csproj" />
+  <Project Path="src/X1Beer.Tunnel.AspNetCore/X1Beer.Tunnel.AspNetCore.csproj" />
+  <Project Path="tests/X1Beer.Tunnel.Tests/X1Beer.Tunnel.Tests.csproj" />
+</Solution>

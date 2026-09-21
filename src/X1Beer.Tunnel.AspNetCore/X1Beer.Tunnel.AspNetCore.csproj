@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>X1Beer.Tunnel.Hosting</RootNamespace>
+    <AssemblyName>X1Beer.Tunnel.AspNetCore</AssemblyName>
+    <PackageId>X1Beer.Tunnel.AspNetCore</PackageId>
+    <Version>0.2.0</Version>
+    <Description>ASP.NET Core hosted service that opens a local HTTPS tunnel after Kestrel starts listening.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\x1tunnel.csproj" />
+  </ItemGroup>
+</Project>
