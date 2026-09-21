@@ -45,16 +45,15 @@ internal static class TunnelEndpoint
             if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) || uri.Port is < 1)
                 continue;
 
-            if (!TryParse(address, out var parsedHost, out var parsedPort))
-                continue;
-
-            var parsedScheme = uri.Scheme;
-            var parsed = (parsedHost, parsedPort, parsedScheme);
+            var parsedHost = uri.Host is "::" or "[::]" or "0.0.0.0" or "+" or "*" or ""
+                ? "127.0.0.1"
+                : uri.Host;
+            var parsed = (Host: parsedHost, Port: uri.Port, Scheme: uri.Scheme);
             any ??= parsed;
-            if (string.Equals(parsedScheme, "http", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(parsed.Scheme, "http", StringComparison.OrdinalIgnoreCase))
                 http ??= parsed;
 
-            if (string.Equals(parsedScheme, preferredScheme, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(parsed.Scheme, preferredScheme, StringComparison.OrdinalIgnoreCase))
             {
                 preferred = parsed;
                 break;

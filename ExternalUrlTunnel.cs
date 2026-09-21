@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace X1Beer.Tunnel;
 
@@ -11,7 +12,7 @@ internal sealed class ExternalUrlTunnel : ITunnel
     {
         PublicUrl = publicUrl;
         Provider = provider;
-        _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+        _logger = logger ?? NullLogger.Instance;
     }
 
     public string PublicUrl { get; }

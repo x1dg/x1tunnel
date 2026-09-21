@@ -42,13 +42,6 @@ public sealed class TunnelFactory : ITunnelFactory
 
         var remoteOrigin = UsesRemoteCloudflareOrigin(options);
         options.Validate(requirePort: publicUrl is null && !remoteOrigin);
-        if (options.Providers is null)
-        {
-            if (publicUrl is null && !remoteOrigin)
-                throw new ArgumentException("At least one tunnel provider is required.", nameof(options));
-
-            options.Providers = [];
-        }
 
         if (!TunnelOptions.IsLoopback(options.LocalHost))
         {
@@ -64,26 +57,17 @@ public sealed class TunnelFactory : ITunnelFactory
                 options.LocalPort > 0 ? options.LocalOrigin() : "a local port");
         }
 
-        if (publicUrl is not null)
-        {
-            if (options.WaitForLocalListener && options.LocalPort > 0)
-            {
-                await LocalListenerProbe.WaitAsync(options.LocalHost, options.LocalPort, options.ListenTimeout, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            _logger.LogInformation("Using configured public tunnel URL {Url}", publicUrl);
-            return new ExternalUrlTunnel(publicUrl, "external", _logger);
-        }
-
         if (options.WaitForLocalListener && options.LocalPort > 0)
         {
             await LocalListenerProbe.WaitAsync(options.LocalHost, options.LocalPort, options.ListenTimeout, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        if (options.Providers.Count == 0)
-            throw new ArgumentException("At least one tunnel provider is required.", nameof(options));
+        if (publicUrl is not null)
+        {
+            _logger.LogInformation("Using configured public tunnel URL {Url}", publicUrl);
+            return new ExternalUrlTunnel(publicUrl, "external", _logger);
+        }
 
         var errors = new List<string>();
         foreach (var name in options.Providers)
