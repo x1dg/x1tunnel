@@ -122,22 +122,17 @@ internal static class TunnelProcessHost
 
             return session;
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (Exception ex)
         {
             await KillAsync(process, logger, provider).ConfigureAwait(false);
-            throw;
-        }
-        catch (OperationCanceledException)
-        {
-            await KillAsync(process, logger, provider).ConfigureAwait(false);
-            throw new TunnelException(
-                provider,
-                $"Timed out after {timeout.TotalSeconds:0}s waiting for a public URL.",
-                Tail(output));
-        }
-        catch
-        {
-            await KillAsync(process, logger, provider).ConfigureAwait(false);
+            if (ex is OperationCanceledException && !cancellationToken.IsCancellationRequested)
+            {
+                throw new TunnelException(
+                    provider,
+                    $"Timed out after {timeout.TotalSeconds:0}s waiting for a public URL.",
+                    Tail(output));
+            }
+
             throw;
         }
     }

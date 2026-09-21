@@ -68,6 +68,8 @@ internal sealed class ProcessTunnel : ITunnel
         MarkDisconnected();
     }
 
+    public async ValueTask DisposeAsync() => await StopAsync().ConfigureAwait(false);
+
     private void TryKill()
     {
         try
@@ -112,8 +114,6 @@ internal sealed class ProcessTunnel : ITunnel
             return -1;
         }
     }
-
-    public async ValueTask DisposeAsync() => await StopAsync().ConfigureAwait(false);
 
     internal void MarkDisconnected()
     {

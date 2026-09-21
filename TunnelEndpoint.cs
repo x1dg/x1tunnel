@@ -12,9 +12,7 @@ internal static class TunnelEndpoint
         if (Uri.TryCreate(address, UriKind.Absolute, out var uri) && uri.Port > 0)
         {
             port = uri.Port;
-            host = uri.Host is "::" or "[::]" or "0.0.0.0" or "+" or "*" or ""
-                ? "127.0.0.1"
-                : uri.Host;
+            host = NormalizeHost(uri.Host);
             return true;
         }
 
@@ -45,10 +43,7 @@ internal static class TunnelEndpoint
             if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) || uri.Port is < 1)
                 continue;
 
-            var parsedHost = uri.Host is "::" or "[::]" or "0.0.0.0" or "+" or "*" or ""
-                ? "127.0.0.1"
-                : uri.Host;
-            var parsed = (Host: parsedHost, Port: uri.Port, Scheme: uri.Scheme);
+            var parsed = (Host: NormalizeHost(uri.Host), Port: uri.Port, Scheme: uri.Scheme);
             any ??= parsed;
             if (string.Equals(parsed.Scheme, "http", StringComparison.OrdinalIgnoreCase))
                 http ??= parsed;
@@ -69,4 +64,9 @@ internal static class TunnelEndpoint
         scheme = chosen.Value.Scheme;
         return true;
     }
+
+    private static string NormalizeHost(string host) =>
+        host is "::" or "[::]" or "0.0.0.0" or "+" or "*" or ""
+            ? "127.0.0.1"
+            : host;
 }
