@@ -16,10 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\DependencyInjection\**\*.cs" Link="DependencyInjection\%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\x1tunnel.csproj" />
   </ItemGroup>
 
