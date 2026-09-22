@@ -19,10 +19,10 @@
 <ProjectReference Include="..\x1beer\x1tunnel.csproj" />
 ```
 
-Пакет ASP.NET Core:
+Хостинг вместе с приложением:
 
 ```xml
-<ProjectReference Include="..\x1beer\src\x1beer.Tunnel.AspNetCore\x1beer.Tunnel.AspNetCore.csproj" />
+<ProjectReference Include="..\x1beer\x1beer.Tunnel.Hosting\x1beer.Tunnel.Hosting.csproj" />
 ```
 
 Нужен .NET 8 или .NET 10. Для quick tunnel — `cloudflared` в PATH.

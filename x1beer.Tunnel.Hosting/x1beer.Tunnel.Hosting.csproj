@@ -4,8 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>x1beer.Tunnel.Hosting</RootNamespace>
-    <AssemblyName>x1beer.Tunnel.AspNetCore</AssemblyName>
-    <PackageId>x1beer.Tunnel.AspNetCore</PackageId>
+    <AssemblyName>x1beer.Tunnel.Hosting</AssemblyName>
+    <PackageId>x1beer.Tunnel.Hosting</PackageId>
     <Version>0.2.0</Version>
     <Description>ASP.NET Core hosted service that opens a local HTTPS tunnel after Kestrel starts listening.</Description>
     <IsPackable>true</IsPackable>
@@ -16,11 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\DependencyInjection\**\*.cs" Link="DependencyInjection\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\DependencyInjection\**\*.cs" Link="DependencyInjection\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\x1tunnel.csproj" />
+    <ProjectReference Include="..\x1tunnel.csproj" />
   </ItemGroup>
 
   <ItemGroup>

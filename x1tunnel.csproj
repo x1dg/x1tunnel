@@ -10,7 +10,7 @@
     <Description>Local HTTPS tunnels for .NET webhook development and tests. Starts cloudflared, ngrok, or localtunnel and returns a disposable session.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
-    <DefaultItemExcludes>$(DefaultItemExcludes);src/**;tests/**;DependencyInjection/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);x1beer.Tunnel.Hosting/**;x1beer.Tunnel.Tests/**;DependencyInjection/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="x1beer.Tunnel.Tests" />
-    <InternalsVisibleTo Include="x1beer.Tunnel.AspNetCore" />
+    <InternalsVisibleTo Include="x1beer.Tunnel.Hosting" />
   </ItemGroup>
 
   <ItemGroup>

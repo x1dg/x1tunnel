@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\x1tunnel.csproj" />
-    <ProjectReference Include="..\..\src\x1beer.Tunnel.AspNetCore\x1beer.Tunnel.AspNetCore.csproj" />
+    <ProjectReference Include="..\x1tunnel.csproj" />
+    <ProjectReference Include="..\x1beer.Tunnel.Hosting\x1beer.Tunnel.Hosting.csproj" />
   </ItemGroup>
 </Project>
