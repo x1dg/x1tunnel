@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 internal sealed class ExternalUrlTunnel : ITunnel
 {

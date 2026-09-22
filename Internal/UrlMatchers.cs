@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 internal static partial class UrlMatchers
 {

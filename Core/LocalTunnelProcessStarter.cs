@@ -1,4 +1,4 @@
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 [Obsolete("Use TunnelFactory.StartAsync and dispose the returned ITunnel.")]
 public static class LocalTunnelProcessStarter

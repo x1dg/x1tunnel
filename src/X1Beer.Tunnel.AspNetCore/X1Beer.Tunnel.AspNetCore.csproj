@@ -3,9 +3,9 @@
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>X1Beer.Tunnel.Hosting</RootNamespace>
-    <AssemblyName>X1Beer.Tunnel.AspNetCore</AssemblyName>
-    <PackageId>X1Beer.Tunnel.AspNetCore</PackageId>
+    <RootNamespace>x1beer.Tunnel.Hosting</RootNamespace>
+    <AssemblyName>x1beer.Tunnel.AspNetCore</AssemblyName>
+    <PackageId>x1beer.Tunnel.AspNetCore</PackageId>
     <Version>0.2.0</Version>
     <Description>ASP.NET Core hosted service that opens a local HTTPS tunnel after Kestrel starts listening.</Description>
     <IsPackable>true</IsPackable>
@@ -24,6 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="X1Beer.Tunnel.Tests" />
+    <InternalsVisibleTo Include="x1beer.Tunnel.Tests" />
   </ItemGroup>
 </Project>

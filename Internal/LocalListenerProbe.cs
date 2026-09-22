@@ -1,6 +1,6 @@
 using System.Net.Sockets;
 
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 internal static class LocalListenerProbe
 {

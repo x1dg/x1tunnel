@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using X1Beer.Tunnel;
+using x1beer.Tunnel;
 
-namespace X1Beer.Tunnel.Hosting;
+namespace x1beer.Tunnel.Hosting;
 
 internal sealed class LocalTunnelHostedService : BackgroundService
 {

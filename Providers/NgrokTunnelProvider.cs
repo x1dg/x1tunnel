@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 public sealed class NgrokTunnelProvider : ITunnelProvider
 {

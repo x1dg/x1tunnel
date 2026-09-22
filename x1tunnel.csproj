@@ -3,9 +3,9 @@
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>X1Beer.Tunnel</RootNamespace>
-    <AssemblyName>X1Beer.Tunnel</AssemblyName>
-    <PackageId>X1Beer.Tunnel</PackageId>
+    <RootNamespace>x1beer.Tunnel</RootNamespace>
+    <AssemblyName>x1beer.Tunnel</AssemblyName>
+    <PackageId>x1beer.Tunnel</PackageId>
     <Version>0.2.0</Version>
     <Description>Local HTTPS tunnels for .NET webhook development and tests. Starts cloudflared, ngrok, or localtunnel and returns a disposable session.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="X1Beer.Tunnel.Tests" />
-    <InternalsVisibleTo Include="X1Beer.Tunnel.AspNetCore" />
+    <InternalsVisibleTo Include="x1beer.Tunnel.Tests" />
+    <InternalsVisibleTo Include="x1beer.Tunnel.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>

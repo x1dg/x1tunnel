@@ -1,4 +1,4 @@
-# X1Beer.Tunnel
+# x1beer.Tunnel
 
 Библиотека для локальных HTTPS-туннелей: вебхуки, интеграционные тесты, разработка. Один вызов поднимает публичный URL до `127.0.0.1:port` и возвращает сессию, которую нужно остановить.
 
@@ -22,7 +22,7 @@
 Пакет ASP.NET Core:
 
 ```xml
-<ProjectReference Include="..\x1beer\src\X1Beer.Tunnel.AspNetCore\X1Beer.Tunnel.AspNetCore.csproj" />
+<ProjectReference Include="..\x1beer\src\x1beer.Tunnel.AspNetCore\x1beer.Tunnel.AspNetCore.csproj" />
 ```
 
 Нужен .NET 8 или .NET 10. Для quick tunnel — `cloudflared` в PATH.

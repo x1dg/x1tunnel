@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 internal sealed class ProcessTunnel : ITunnel
 {

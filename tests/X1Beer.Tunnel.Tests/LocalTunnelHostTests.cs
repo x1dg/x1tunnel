@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using X1Beer.Tunnel;
-using X1Beer.Tunnel.Hosting;
+using x1beer.Tunnel;
+using x1beer.Tunnel.Hosting;
 using Xunit;
 
-namespace X1Beer.Tunnel.Tests;
+namespace x1beer.Tunnel.Tests;
 
 public class LocalTunnelHostTests
 {

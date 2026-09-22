@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 internal static class CommandLocator
 {

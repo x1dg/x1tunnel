@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace X1Beer.Tunnel.Tests;
+namespace x1beer.Tunnel.Tests;
 
 public class TunnelFactoryTests
 {

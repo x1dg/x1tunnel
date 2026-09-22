@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <RootNamespace>X1Beer.Tunnel.Tests</RootNamespace>
+    <RootNamespace>x1beer.Tunnel.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\x1tunnel.csproj" />
-    <ProjectReference Include="..\..\src\X1Beer.Tunnel.AspNetCore\X1Beer.Tunnel.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\x1beer.Tunnel.AspNetCore\x1beer.Tunnel.AspNetCore.csproj" />
   </ItemGroup>
 </Project>

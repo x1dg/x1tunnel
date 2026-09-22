@@ -1,4 +1,4 @@
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 public interface ITunnelFactory
 {

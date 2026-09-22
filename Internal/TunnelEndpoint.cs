@@ -1,4 +1,4 @@
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 internal static class TunnelEndpoint
 {

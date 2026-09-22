@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Logging;
 
-namespace X1Beer.Tunnel;
+namespace x1beer.Tunnel;
 
 internal static class TunnelProcessHost
 {

@@ -1,6 +1,6 @@
-using X1Beer.Tunnel;
+using x1beer.Tunnel;
 
-namespace X1Beer.Tunnel.Hosting;
+namespace x1beer.Tunnel.Hosting;
 
 public sealed class TunnelInfo : ITunnelInfo
 {
