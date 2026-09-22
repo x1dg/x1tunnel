@@ -36,7 +36,7 @@ public sealed class TunnelFactory : ITunnelFactory
         ArgumentNullException.ThrowIfNull(options);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var publicUrl = FirstNonEmpty(options.PublicUrl, Environment.GetEnvironmentVariable(TunnelEnvironment.PublicUrl));
+        var publicUrl = FirstNonEmpty(options.PublicUrl, Environment.GetEnvironmentVariable(TunnelConstants.PublicUrl));
         if (publicUrl is not null)
             EnsurePublicHttpUrl(publicUrl);
 
@@ -130,7 +130,7 @@ public sealed class TunnelFactory : ITunnelFactory
         var providers = options.Providers;
         return providers is { Count: > 0 }
             && providers.TrueForAll(name =>
-                string.Equals(name, TunnelProviderNames.CloudflareNamed, StringComparison.OrdinalIgnoreCase));
+                string.Equals(name, TunnelConstants.CloudflareNamed, StringComparison.OrdinalIgnoreCase));
     }
 
     private static void EnsurePublicHttpUrl(string publicUrl)

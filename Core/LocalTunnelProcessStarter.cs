@@ -21,8 +21,8 @@ public static class LocalTunnelProcessStarter
                 WaitForLocalListener = false,
                 Providers =
                 [
-                    TunnelProviderNames.CloudflareQuick,
-                    TunnelProviderNames.LocalTunnel,
+                    TunnelConstants.CloudflareQuick,
+                    TunnelConstants.LocalTunnel,
                 ],
             }).ConfigureAwait(false);
 

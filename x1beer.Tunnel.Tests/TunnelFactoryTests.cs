@@ -25,11 +25,11 @@ public class TunnelFactoryTests
     [Fact]
     public async Task Environment_url_is_used_when_options_url_is_empty()
     {
-        var previous = Environment.GetEnvironmentVariable(TunnelEnvironment.PublicUrl);
-        Environment.SetEnvironmentVariable(TunnelEnvironment.PublicUrl, "https://from-env.example");
+        var previous = Environment.GetEnvironmentVariable(TunnelConstants.PublicUrl);
+        Environment.SetEnvironmentVariable(TunnelConstants.PublicUrl, "https://from-env.example");
         try
         {
-            var provider = new FakeProvider(TunnelProviderNames.CloudflareQuick) { Available = true };
+            var provider = new FakeProvider(TunnelConstants.CloudflareQuick) { Available = true };
             var factory = new TunnelFactory([provider]);
             await using var tunnel = await factory.StartAsync(new TunnelOptions
             {
@@ -42,7 +42,7 @@ public class TunnelFactoryTests
         }
         finally
         {
-            Environment.SetEnvironmentVariable(TunnelEnvironment.PublicUrl, previous);
+            Environment.SetEnvironmentVariable(TunnelConstants.PublicUrl, previous);
         }
     }
 
@@ -149,14 +149,14 @@ public class TunnelFactoryTests
     [Fact]
     public async Task Does_not_start_a_provider_until_the_local_port_accepts_connections()
     {
-        var provider = new FakeProvider(TunnelProviderNames.CloudflareQuick);
+        var provider = new FakeProvider(TunnelConstants.CloudflareQuick);
         var factory = new TunnelFactory([provider]);
 
         await Assert.ThrowsAsync<TunnelException>(() => factory.StartAsync(new TunnelOptions
         {
             LocalPort = ClosedPort(),
             ListenTimeout = TimeSpan.FromMilliseconds(400),
-            Providers = [TunnelProviderNames.CloudflareQuick],
+            Providers = [TunnelConstants.CloudflareQuick],
         }));
 
         Assert.Equal(0, provider.Starts);

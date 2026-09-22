@@ -48,7 +48,7 @@ await using var tunnel = await new TunnelFactory().StartAsync(new TunnelOptions
     LocalPort = 5101,
     RequestedHostname = "hooks.example.com",
     CloudflareTunnelToken = token,
-    Providers = [TunnelProviderNames.CloudflareNamed],
+    Providers = [TunnelConstants.CloudflareNamed],
 });
 ```
 
@@ -57,8 +57,8 @@ await using var tunnel = await new TunnelFactory().StartAsync(new TunnelOptions
 ```csharp
 Providers =
 [
-    TunnelProviderNames.CloudflareQuick,
-    TunnelProviderNames.LocalTunnel,
+    TunnelConstants.CloudflareQuick,
+    TunnelConstants.LocalTunnel,
 ]
 ```
 

@@ -4,7 +4,7 @@ namespace x1beer.Tunnel;
 
 public sealed class LocalTunnelProvider : ITunnelProvider
 {
-    public string Name => TunnelProviderNames.LocalTunnel;
+    public string Name => TunnelConstants.LocalTunnel;
 
     public bool CanStart(TunnelOptions options) => CommandLocator.Exists("npx");
 

@@ -4,7 +4,7 @@ namespace x1beer.Tunnel;
 
 public sealed class CloudflareQuickTunnelProvider : ITunnelProvider
 {
-    public string Name => TunnelProviderNames.CloudflareQuick;
+    public string Name => TunnelConstants.CloudflareQuick;
 
     public bool CanStart(TunnelOptions options) => CommandLocator.Exists("cloudflared");
 

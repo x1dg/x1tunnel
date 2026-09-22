@@ -4,7 +4,7 @@ namespace x1beer.Tunnel;
 
 public sealed class NgrokTunnelProvider : ITunnelProvider
 {
-    public string Name => TunnelProviderNames.Ngrok;
+    public string Name => TunnelConstants.Ngrok;
 
     public bool CanStart(TunnelOptions options) => CommandLocator.Exists("ngrok");
 

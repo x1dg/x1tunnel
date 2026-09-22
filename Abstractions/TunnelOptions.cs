@@ -10,7 +10,7 @@ public sealed class TunnelOptions
 
     public string LocalScheme { get; set; } = "http";
 
-    public List<string> Providers { get; set; } = [TunnelProviderNames.CloudflareQuick];
+    public List<string> Providers { get; set; } = [TunnelConstants.CloudflareQuick];
 
     public string? RequestedHostname { get; set; }
 
